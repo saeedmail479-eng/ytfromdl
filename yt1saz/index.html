@@ -1,183 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta name="google-site-verification" content="apptJs6j2dGba_YRiUBj2ueaHNvBHNshKIMn5cY7pyU" 
+<head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>YT Downloader</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <title>Ytfromdl</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #0d0d0f;
-      --card: rgba(255,255,255,0.05);
-      --card-border: rgba(255,255,255,0.09);
-      --card-hover: rgba(255,255,255,0.08);
-      --text: #f0f0f0;
-      --muted: rgba(255,255,255,0.38);
-      --accent: #3b82f6;
-      --accent-glow: rgba(59,130,246,0.35);
-      --red: #ef4444;
-      --radius: 16px;
+      --bg: #0a0a0f; --card: rgba(255,255,255,0.05);
+      --card-border: rgba(255,255,255,0.08); --card-hover: rgba(255,255,255,0.08);
+      --text: #f0f0f0; --muted: rgba(255,255,255,0.35);
+      --accent: #3b82f6; --accent-glow: rgba(59,130,246,0.35);
+      --red: #ef4444; --radius: 16px;
     }
-
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 60px 20px 100px;
-      position: relative;
-      overflow-x: hidden;
+      background: var(--bg); color: var(--text);
+      font-family: 'DM Sans', sans-serif; min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 60px 20px 100px; position: relative; overflow-x: hidden;
     }
-
-    .blob {
-      position: fixed; border-radius: 50%;
-      filter: blur(100px); pointer-events: none;
-      z-index: 0; opacity: 0.18;
-    }
-    .blob-1 { width: 500px; height: 500px; background: #2563eb; top: -100px; left: -150px; }
-    .blob-2 { width: 400px; height: 400px; background: #7c3aed; bottom: 0; right: -100px; }
-
+    .blob { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; opacity: 0.15; }
+    .blob-1 { width: 600px; height: 600px; background: #1d4ed8; top: -150px; left: -200px; }
+    .blob-2 { width: 500px; height: 500px; background: #6d28d9; bottom: -100px; right: -150px; }
     .container { width: 100%; max-width: 560px; position: relative; z-index: 1; }
 
-    header { margin-bottom: 40px; animation: fadeUp 0.5s ease both; }
-
-    .logo-row { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
-
-    .logo-icon {
-      width: 36px; height: 36px; background: var(--accent);
-      border-radius: 10px; display: flex; align-items: center;
-      justify-content: center; flex-shrink: 0;
-      box-shadow: 0 0 20px var(--accent-glow);
-    }
+    /* HEADER */
+    header { margin-bottom: 28px; animation: fadeUp 0.5s ease both; }
+    .logo-row { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+    .logo-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 20px var(--accent-glow); }
     .logo-icon svg { width: 18px; height: 18px; fill: #fff; }
+    h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+    .subtitle { font-size: 13px; color: var(--muted); padding-left: 48px; }
 
-    h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
-    .subtitle { font-size: 14px; color: var(--muted); padding-left: 48px; }
-
-    .search-card {
-      background: var(--card); border: 1px solid var(--card-border);
-      border-radius: var(--radius); padding: 20px;
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      margin-bottom: 12px; animation: fadeUp 0.5s ease 0.1s both;
+    /* ═══ RANK CARD ═══ */
+    .rank-card {
+      border-radius: 20px; padding: 22px 22px 18px;
+      margin-bottom: 16px; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      animation: fadeUp 0.5s ease 0.05s both; position: relative; overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: border-color 0.6s, box-shadow 0.6s;
+      background: rgba(255,255,255,0.04);
     }
+    .rank-card-glow {
+      position: absolute; inset: 0; opacity: 0.06; pointer-events: none;
+      transition: opacity 0.6s;
+    }
+    .rank-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .rank-left { display: flex; align-items: center; gap: 16px; }
+    .rank-icon-wrap { width: 68px; height: 68px; flex-shrink: 0; transition: filter 0.6s; }
+    .rank-icon-wrap svg { width: 100%; height: 100%; }
+    .rank-icon-wrap.pop { animation: iconPop 0.65s cubic-bezier(0.175,0.885,0.32,1.4) forwards; }
+    .rank-info { }
+    .rank-tier-label { font-size: 9px; font-weight: 800; letter-spacing: 3.5px; text-transform: uppercase; opacity: 0.4; margin-bottom: 4px; }
+    .rank-name { font-size: 22px; font-weight: 900; letter-spacing: -0.8px; transition: color 0.5s; line-height: 1; }
+    .rank-sub { font-size: 11px; color: var(--muted); margin-top: 5px; }
+    .rank-right { text-align: right; }
+    .rank-dl-num { font-size: 36px; font-weight: 900; line-height: 1; letter-spacing: -1px; }
+    .rank-dl-label { font-size: 9px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
 
+    /* Pip bars */
+    .rank-pips { display: flex; gap: 6px; margin-bottom: 14px; }
+    .pip { height: 5px; flex: 1; border-radius: 100px; background: rgba(255,255,255,0.09); transition: background 0.5s, box-shadow 0.5s; }
+
+    /* XP Bar */
+    .xp-bar-track { background: rgba(255,255,255,0.07); border-radius: 100px; height: 10px; overflow: hidden; position: relative; }
+    .xp-bar-fill { height: 100%; border-radius: 100px; position: relative; transition: width 1.3s cubic-bezier(0.22,1,0.36,1); min-width: 6px; }
+    .xp-bar-fill::after { content: ''; position: absolute; top: 0; left: -100%; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent); animation: shimmer 2.2s infinite; }
+    .xp-bar-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--muted); }
+
+    /* ═══ LEVEL UP OVERLAY ═══ */
+    .rankup-overlay {
+      position: fixed; inset: 0; z-index: 900; pointer-events: none;
+      display: flex; align-items: center; justify-content: center; opacity: 0;
+    }
+    .rankup-overlay.show { animation: overlayIn 2.8s ease forwards; }
+    .rankup-flash { position: absolute; inset: 0; opacity: 0; animation: none; }
+    .rankup-overlay.show .rankup-flash { animation: flashPulse 2.8s ease forwards; }
+    .rankup-center {
+      position: relative; text-align: center; opacity: 0;
+    }
+    .rankup-overlay.show .rankup-center { animation: rankupBounce 2.8s ease forwards; }
+    .rankup-big-icon { width: 110px; height: 110px; margin: 0 auto 16px; filter: drop-shadow(0 0 30px var(--rc2, gold)); }
+    .rankup-big-icon svg { width: 100%; height: 100%; }
+    .rankup-label { font-size: 11px; font-weight: 800; letter-spacing: 5px; text-transform: uppercase; opacity: 0.6; }
+    .rankup-rank-name { font-size: 40px; font-weight: 900; letter-spacing: -1.5px; margin-top: 6px; }
+    .rankup-sub { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+    /* ═══ TOAST ═══ */
+    .levelup-toast {
+      position: fixed; top: 20px; left: 50%;
+      transform: translateX(-50%) translateY(-140px);
+      border-radius: 18px; padding: 14px 24px 14px 14px;
+      display: flex; align-items: center; gap: 14px; z-index: 1000;
+      transition: transform 0.6s cubic-bezier(0.175,0.885,0.32,1.275);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.8); white-space: nowrap;
+      background: #111118; border: 1px solid rgba(255,255,255,0.12);
+    }
+    .levelup-toast.show { transform: translateX(-50%) translateY(0); }
+    .toast-icon { width: 48px; height: 48px; flex-shrink: 0; }
+    .toast-icon svg { width: 100%; height: 100%; }
+    .toast-label { font-size: 9px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; opacity: 0.45; }
+    .toast-name { font-size: 20px; font-weight: 900; margin-top: 2px; }
+
+    /* XP Float + Particles */
+    .xp-popup { position: fixed; pointer-events: none; z-index: 999; font-size: 22px; font-weight: 900; letter-spacing: -0.5px; animation: xpFloat 1.5s cubic-bezier(0.22,1,0.36,1) forwards; opacity: 0; }
+    .particle { position: fixed; pointer-events: none; z-index: 998; border-radius: 50%; animation: particleFly var(--dur,0.9s) ease forwards; opacity: 0; }
+
+    /* Duplicate warning */
+    .dup-warning { font-size: 12px; color: #f59e0b; display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); border-radius: 8px; margin-bottom: 8px; display: none; }
+
+    /* SEARCH */
+    .search-card { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 20px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); margin-bottom: 12px; animation: fadeUp 0.5s ease 0.15s both; }
     .input-row { display: flex; gap: 10px; }
-
-    input[type="text"] {
-      flex: 1; background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
-      padding: 12px 16px; font-size: 14px; font-family: 'DM Sans', sans-serif;
-      color: var(--text); outline: none;
-      transition: border-color 0.2s, background 0.2s;
-    }
+    input[type="text"] { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px 16px; font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--text); outline: none; transition: border-color 0.2s, background 0.2s; }
     input[type="text"]:focus { border-color: var(--accent); background: rgba(59,130,246,0.07); }
     input::placeholder { color: var(--muted); }
-
-    .fetch-btn {
-      background: var(--accent); border: none; border-radius: 10px;
-      padding: 12px 22px; font-size: 14px; font-weight: 500;
-      font-family: 'DM Sans', sans-serif; color: #fff; cursor: pointer;
-      white-space: nowrap; transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
-      box-shadow: 0 4px 16px var(--accent-glow);
-    }
-    .fetch-btn:hover { opacity: 0.88; box-shadow: 0 4px 24px var(--accent-glow); }
+    .fetch-btn { background: var(--accent); border: none; border-radius: 10px; padding: 12px 22px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; color: #fff; cursor: pointer; white-space: nowrap; transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s; box-shadow: 0 4px 16px var(--accent-glow); }
+    .fetch-btn:hover { opacity: 0.88; }
     .fetch-btn:active { transform: scale(0.97); }
     .fetch-btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
-
-    .status {
-      font-size: 13px; color: var(--muted); min-height: 18px;
-      display: flex; align-items: center; gap: 8px;
-      padding: 0 4px; margin-bottom: 20px;
-    }
+    .status { font-size: 13px; color: var(--muted); min-height: 18px; display: flex; align-items: center; gap: 8px; padding: 0 4px; margin-bottom: 20px; }
     .status.error { color: var(--red); }
+    .spinner { width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.15); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
 
-    .spinner {
-      width: 13px; height: 13px;
-      border: 2px solid rgba(255,255,255,0.15);
-      border-top-color: var(--accent); border-radius: 50%;
-      animation: spin 0.7s linear infinite; flex-shrink: 0;
-    }
-
-    .result-panel {
-      background: var(--card); border: 1px solid var(--card-border);
-      border-radius: var(--radius); overflow: hidden;
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      display: none; animation: fadeUp 0.35s ease both;
-    }
+    /* RESULTS */
+    .result-panel { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: none; animation: fadeUp 0.35s ease both; }
     .result-panel.visible { display: block; }
-
-    .video-info {
-      display: flex; gap: 14px; padding: 18px 18px 16px;
-      border-bottom: 1px solid var(--card-border);
-    }
-
-    .video-thumb {
-      width: 118px; height: 66px; object-fit: cover;
-      border-radius: 8px; flex-shrink: 0; background: rgba(255,255,255,0.06);
-    }
-
-    .video-meta {
-      flex: 1; overflow: hidden; display: flex;
-      flex-direction: column; justify-content: center; gap: 5px;
-    }
-
-    .video-title {
-      font-size: 14px; font-weight: 500; line-height: 1.45;
-      overflow: hidden; display: -webkit-box;
-      -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-    }
-
+    .video-info { display: flex; gap: 14px; padding: 18px 18px 16px; border-bottom: 1px solid var(--card-border); }
+    .video-thumb { width: 118px; height: 66px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: rgba(255,255,255,0.06); }
+    .video-meta { flex: 1; overflow: hidden; display: flex; flex-direction: column; justify-content: center; gap: 5px; }
+    .video-title { font-size: 14px; font-weight: 500; line-height: 1.45; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
     .video-duration { font-size: 12px; color: var(--muted); }
-
-    .formats-header {
-      padding: 16px 18px 8px; font-size: 11px; font-weight: 600;
-      color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px;
-    }
-
+    .formats-header { padding: 16px 18px 8px; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
     .formats-list { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 5px; }
-
-    .format-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 12px; background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06); border-radius: 10px;
-      transition: background 0.15s, border-color 0.15s;
-    }
+    .format-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; transition: background 0.15s, border-color 0.15s; }
     .format-row:hover { background: var(--card-hover); border-color: rgba(255,255,255,0.12); }
-
     .format-info { display: flex; align-items: center; gap: 10px; }
-    .format-quality { font-size: 13px; font-weight: 600; color: var(--text); min-width: 40px; }
-
-    .format-tag {
-      font-size: 11px; font-weight: 500; padding: 2px 7px;
-      border-radius: 5px; background: rgba(59,130,246,0.15); color: #60a5fa;
-    }
-    .format-tag.audio { background: rgba(168,85,247,0.15); color: #c084fc; }
-
-    .format-size { font-size: 12px; color: var(--muted); }
-
-    .dl-btn {
-      padding: 7px 16px; font-size: 13px; font-weight: 500;
-      font-family: 'DM Sans', sans-serif; background: rgba(59,130,246,0.15);
-      color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); border-radius: 8px;
-      cursor: pointer; text-decoration: none; display: inline-block;
-      transition: background 0.15s, color 0.15s, border-color 0.15s; white-space: nowrap;
-    }
+    .format-quality { font-size: 13px; font-weight: 700; color: var(--text); min-width: 40px; }
+    .format-tag { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 5px; background: rgba(59,130,246,0.15); color: #60a5fa; }
+    .dl-btn { padding: 7px 16px; font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif; background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; transition: background 0.15s, color 0.15s, border-color 0.15s; white-space: nowrap; }
     .dl-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .note { margin-top: 16px; font-size: 12px; color: rgba(255,255,255,0.15); text-align: center; }
 
-    .note { margin-top: 16px; font-size: 12px; color: rgba(255,255,255,0.2); text-align: center; animation: fadeUp 0.5s ease 0.3s both; }
-
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    /* ANIMATIONS */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes shimmer { to { left: 200%; } }
+    @keyframes iconPop {
+      0%   { transform: scale(1) rotate(0deg); }
+      20%  { transform: scale(0.75) rotate(-12deg); }
+      55%  { transform: scale(1.65) rotate(10deg); }
+      75%  { transform: scale(0.93) rotate(-4deg); }
+      90%  { transform: scale(1.06) rotate(2deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    @keyframes xpFloat {
+      0%   { opacity: 0; transform: translateY(8px) scale(0.6); }
+      12%  { opacity: 1; transform: translateY(0) scale(1.15); }
+      55%  { opacity: 1; transform: translateY(-60px) scale(1.05); }
+      100% { opacity: 0; transform: translateY(-100px) scale(0.7); }
+    }
+    @keyframes particleFly {
+      0%   { opacity: 1; transform: translate(0,0) scale(1.2); }
+      100% { opacity: 0; transform: translate(var(--tx,0px), var(--ty,-80px)) scale(0); }
+    }
+    @keyframes overlayIn { 0%,100% { opacity: 0; } 10%,80% { opacity: 1; } }
+    @keyframes flashPulse { 0% { opacity: 0; } 15% { opacity: 0.18; } 60% { opacity: 0.08; } 100% { opacity: 0; } }
+    @keyframes rankupBounce {
+      0%   { opacity: 0; transform: scale(0.2) translateY(40px); }
+      25%  { opacity: 1; transform: scale(1.12) translateY(-10px); }
+      40%  { transform: scale(0.96) translateY(5px); }
+      55%  { transform: scale(1.04) translateY(-3px); }
+      70%  { transform: scale(1) translateY(0); opacity: 1; }
+      85%  { opacity: 1; }
+      100% { opacity: 0; transform: scale(1.05) translateY(-10px); }
+    }
+    @keyframes cardGlow {
+      0%   { box-shadow: 0 0 0 0 var(--rc, gold); }
+      35%  { box-shadow: 0 0 40px 10px var(--rc, gold); }
+      100% { box-shadow: 0 0 0 0 transparent; }
+    }
+    .rank-card.pulse { animation: cardGlow 1s ease forwards; }
   </style>
 </head>
 <body>
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
+
+  <!-- Rank up full-screen overlay -->
+  <div class="rankup-overlay" id="rankupOverlay">
+    <div class="rankup-flash" id="rankupFlash"></div>
+    <div class="rankup-center">
+      <div class="rankup-big-icon" id="rankupBigIcon"></div>
+      <div class="rankup-label">Rank Up!</div>
+      <div class="rankup-rank-name" id="rankupName"></div>
+      <div class="rankup-sub" id="rankupSub"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="levelup-toast" id="levelupToast">
+    <div class="toast-icon" id="toastIcon"></div>
+    <div>
+      <div class="toast-label">Rank Up!</div>
+      <div class="toast-name" id="toastName"></div>
+    </div>
+  </div>
 
   <div class="container">
     <header>
@@ -185,10 +214,39 @@
         <div class="logo-icon">
           <svg viewBox="0 0 24 24"><path d="M19.59 7a2.4 2.4 0 0 0-1.69-1.7C16.46 5 12 5 12 5s-4.46 0-5.9.3A2.4 2.4 0 0 0 4.41 7 25 25 0 0 0 4 12a25 25 0 0 0 .41 5 2.4 2.4 0 0 0 1.69 1.7C7.54 19 12 19 12 19s4.46 0 5.9-.3A2.4 2.4 0 0 0 19.59 17 25 25 0 0 0 20 12a25 25 0 0 0-.41-5zM10 15V9l5 3-5 3z"/></svg>
         </div>
-        <h1>YT Downloader</h1>
+        <h1>Ytfromdl</h1>
       </div>
       <p class="subtitle">Paste any YouTube link to get download options</p>
     </header>
+
+    <!-- Rank card -->
+    <div class="rank-card" id="rankCard">
+      <div class="rank-card-glow" id="rankCardGlow"></div>
+      <div class="rank-top">
+        <div class="rank-left">
+          <div class="rank-icon-wrap" id="rankIconWrap"></div>
+          <div class="rank-info">
+            <div class="rank-tier-label" id="rankTierLabel">Bronze</div>
+            <div class="rank-name" id="rankName">Bronze I</div>
+            <div class="rank-sub" id="rankSub">0 XP • 0 downloads</div>
+          </div>
+        </div>
+        <div class="rank-right">
+          <div class="rank-dl-num" id="dlCount">0</div>
+          <div class="rank-dl-label">Downloads</div>
+        </div>
+      </div>
+      <div class="rank-pips" id="rankPips"></div>
+      <div class="xp-bar-track">
+        <div class="xp-bar-fill" id="xpBarFill" style="width:0%"></div>
+      </div>
+      <div class="xp-bar-labels">
+        <span id="xpLabel">0 / 5 XP</span>
+        <span id="xpNext">5 XP to next rank</span>
+      </div>
+    </div>
+
+    <div class="dup-warning" id="dupWarning">⚠️ Already downloaded — no XP awarded</div>
 
     <div class="search-card">
       <div class="input-row">
@@ -196,7 +254,6 @@
         <button class="fetch-btn" id="fetchBtn" onclick="fetchVideo()">Get links</button>
       </div>
     </div>
-
     <div class="status" id="status"></div>
 
     <div class="result-panel" id="resultPanel">
@@ -212,65 +269,408 @@
     </div>
 
     <p class="note">Only download content you have the right to use.</p>
-
-    <footer style="margin-top: 48px; text-align: center; animation: fadeUp 0.5s ease 0.4s both;">
-      <p style="font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.75); letter-spacing: 0.3px;">Yt1saz</p>
-      <p style="font-size: 12px; color: rgba(255,255,255,0.35); margin-top: 4px;">by saeed</p>
-    </footer>
   </div>
 
   <script>
     // ─────────────────────────────────────────────────────────────
-    //  OWNER CONFIG — add as many RapidAPI keys as you want below.
-    //  When one runs out, the next kicks in automatically.
-    //  All keys reset on the 1st of every month (RapidAPI resets then).
-    //  Get free keys at: https://rapidapi.com/ytjar/api/yt-api
-    // ─────────────────────────────────────────────────────────────
     const RAPIDAPI_KEYS = [
-      "e1e8b38e60msh48a3e0d337b32b0p142d5ejsndb7776ef738f",
-      "056d3532acmshd0f2efdb9e697f8p1580f3jsn1f62148b5bae",
       "7fc93518d0msh49d3769e1ac4936p13973ajsn44efe8afd038",
-      // "your_fourth_key_here",
     ];
     // ─────────────────────────────────────────────────────────────
 
-    // Smart key exhaustion tracker — resets automatically on the 1st of each month
+    // ══════════════════════════════════════════════════════════════
+    //  UNIQUE SVG ICON FOR EVERY SINGLE RANK (18 total)
+    // ══════════════════════════════════════════════════════════════
+    const RANK_ICONS = {
+      // BRONZE — rough ore / stone shapes, getting more refined
+      'Bronze I': `<svg viewBox="0 0 64 64" fill="none">
+        <polygon points="32,8 38,24 56,24 42,34 47,52 32,42 17,52 22,34 8,24 26,24" fill="#3d1f00" stroke="#8b4513" stroke-width="2"/>
+        <polygon points="32,14 36,24 48,24 39,30 42,42 32,36 22,42 25,30 16,24 28,24" fill="#cd7f32" opacity="0.7"/>
+        <text x="32" y="36" text-anchor="middle" font-size="11" font-weight="900" fill="#e8a060" font-family="sans-serif">I</text>
+      </svg>`,
+      'Bronze II': `<svg viewBox="0 0 64 64" fill="none">
+        <polygon points="32,6 39,22 57,22 43,33 49,51 32,40 15,51 21,33 7,22 25,22" fill="#3d1f00" stroke="#a0522d" stroke-width="2"/>
+        <polygon points="32,12 37,23 51,23 40,31 44,44 32,37 20,44 24,31 13,23 27,23" fill="#cd7f32" opacity="0.8"/>
+        <circle cx="32" cy="32" r="7" fill="#2a1000" stroke="#e8a060" stroke-width="1.5"/>
+        <text x="32" y="36" text-anchor="middle" font-size="10" font-weight="900" fill="#e8a060" font-family="sans-serif">II</text>
+      </svg>`,
+      'Bronze III': `<svg viewBox="0 0 64 64" fill="none">
+        <polygon points="32,5 40,21 58,21 44,33 50,52 32,40 14,52 20,33 6,21 24,21" fill="#3d1f00" stroke="#cd7f32" stroke-width="2.5"/>
+        <polygon points="32,11 38,22 52,22 41,30 45,44 32,36 19,44 23,30 12,22 26,22" fill="#cd7f32" opacity="0.9"/>
+        <circle cx="32" cy="32" r="8" fill="#2a1000" stroke="#f0b070" stroke-width="2"/>
+        <text x="32" y="37" text-anchor="middle" font-size="9" font-weight="900" fill="#f5c080" font-family="sans-serif">III</text>
+        <circle cx="32" cy="7" r="2.5" fill="#cd7f32"/>
+      </svg>`,
+
+      // SILVER — shield shapes, more geometric
+      'Silver I': `<svg viewBox="0 0 64 64" fill="none">
+        <path d="M32 6 L54 16 L54 36 Q54 52 32 60 Q10 52 10 36 L10 16 Z" fill="#2a2a35" stroke="#888" stroke-width="2"/>
+        <path d="M32 12 L49 20 L49 36 Q49 48 32 55 Q15 48 15 36 L15 20 Z" fill="#a8a9ad" opacity="0.6"/>
+        <text x="32" y="38" text-anchor="middle" font-size="14" font-weight="900" fill="#ddd" font-family="sans-serif">I</text>
+      </svg>`,
+      'Silver II': `<svg viewBox="0 0 64 64" fill="none">
+        <path d="M32 5 L55 15 L55 36 Q55 53 32 62 Q9 53 9 36 L9 15 Z" fill="#2a2a35" stroke="#aaa" stroke-width="2"/>
+        <path d="M32 11 L50 19 L50 36 Q50 49 32 57 Q14 49 14 36 L14 19 Z" fill="#c0c0c0" opacity="0.7"/>
+        <circle cx="32" cy="30" r="8" fill="#1a1a22" stroke="#ddd" stroke-width="1.5"/>
+        <text x="32" y="35" text-anchor="middle" font-size="10" font-weight="900" fill="#eee" font-family="sans-serif">II</text>
+      </svg>`,
+      'Silver III': `<svg viewBox="0 0 64 64" fill="none">
+        <path d="M32 4 L56 15 L56 37 Q56 55 32 63 Q8 55 8 37 L8 15 Z" fill="#2a2a35" stroke="#c8c8cc" stroke-width="2.5"/>
+        <path d="M32 10 L51 19 L51 37 Q51 51 32 58 Q13 51 13 37 L13 19 Z" fill="#d0d0d4" opacity="0.8"/>
+        <circle cx="32" cy="30" r="9" fill="#1a1a22" stroke="#eee" stroke-width="2"/>
+        <text x="32" y="35" text-anchor="middle" font-size="9" font-weight="900" fill="#f0f0f0" font-family="sans-serif">III</text>
+        <polygon points="32,4 34,9 32,12 30,9" fill="#c8c8cc"/>
+      </svg>`,
+
+      // GOLD — crown shapes, increasingly ornate
+      'Gold I': `<svg viewBox="0 0 64 64" fill="none">
+        <path d="M8 48 L8 28 L20 38 L32 10 L44 38 L56 28 L56 48 Z" fill="#7a5500" stroke="#ffd700" stroke-width="2"/>
+        <path d="M12 44 L12 32 L22 40 L32 16 L42 40 L52 32 L52 44 Z" fill="#ffd700" opacity="0.75"/>
+        <text x="32" y="43" text-anchor="middle" font-size="11" font-weight="900" fill="#fff8dc" font-family="sans-serif">I</text>
+      </svg>`,
+      'Gold II': `<svg viewBox="0 0 64 64" fill="none">
+        <path d="M7 49 L7 27 L19 39 L32 8 L45 39 L57 27 L57 49 Z" fill="#7a5500" stroke="#ffd700" stroke-width="2"/>
+        <path d="M11 45 L11 31 L21 41 L32 14 L43 41 L53 31 L53 45 Z" fill="#ffd700" opacity="0.8"/>
+        <circle cx="32" cy="38" r="7" fill="#5a3f00" stroke="#ffe44d" stroke-width="1.5"/>
+        <text x="32" y="43" text-anchor="middle" font-size="10" font-weight="900" fill="#fff8dc" font-family="sans-serif">II</text>
+        <circle cx="32" cy="10" r="3" fill="#ffd700"/>
+      </svg>`,
+      'Gold III': `<svg viewBox="0 0 64 64" fill="none">
+        <path d="M6 50 L6 26 L18 40 L32 7 L46 40 L58 26 L58 50 Z" fill="#7a5500" stroke="#ffdd00" stroke-width="2.5"/>
+        <path d="M10 46 L10 30 L20 42 L32 13 L44 42 L54 30 L54 46 Z" fill="#ffd700" opacity="0.9"/>
+        <circle cx="32" cy="37" r="8" fill="#4a3000" stroke="#ffe87a" stroke-width="2"/>
+        <text x="32" y="42" text-anchor="middle" font-size="9" font-weight="900" fill="#fff8dc" font-family="sans-serif">III</text>
+        <circle cx="32" cy="9" r="3.5" fill="#ffd700"/>
+        <circle cx="8" cy="28" r="2.5" fill="#ffd700" opacity="0.8"/>
+        <circle cx="56" cy="28" r="2.5" fill="#ffd700" opacity="0.8"/>
+      </svg>`,
+
+      // PLATINUM — crystal/gem shapes
+      'Platinum I': `<svg viewBox="0 0 64 64" fill="none">
+        <polygon points="32,6 50,20 50,44 32,58 14,44 14,20" fill="#002a28" stroke="#40e0d0" stroke-width="2"/>
+        <polygon points="32,12 45,23 45,41 32,52 19,41 19,23" fill="#40e0d0" opacity="0.5"/>
+        <line x1="32" y1="6" x2="32" y2="12" stroke="#80ffee" stroke-width="1.5"/>
+        <line x1="50" y1="20" x2="45" y2="23" stroke="#80ffee" stroke-width="1.5"/>
+        <line x1="14" y1="20" x2="19" y2="23" stroke="#80ffee" stroke-width="1.5"/>
+        <text x="32" y="37" text-anchor="middle" font-size="12" font-weight="900" fill="#b0fff5" font-family="sans-serif">I</text>
+      </svg>`,
+      'Platinum II': `<svg viewBox="0 0 64 64" fill="none">
+        <polygon points="32,5 52,19 52,45 32,59 12,45 12,19" fill="#002a28" stroke="#40e0d0" stroke-width="2"/>
+        <polygon points="32,11 47,22 47,42 32,54 17,42 17,22" fill="#40e0d0" opacity="0.6"/>
+        <polygon points="32,18 40,26 40,38 32,46 24,38 24,26" fill="#004a45" stroke="#80ffee" stroke-width="1.5"/>
+        <text x="32" y="38" text-anchor="middle" font-size="10" font-weight="900" fill="#b0fff5" font-family="sans-serif">II</text>
+        <circle cx="32" cy="7" r="2.5" fill="#40e0d0"/>
+      </svg>`,
+      'Platinum III': `<svg viewBox="0 0 64 64" fill="none">
+        <defs><radialGradient id="ptGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#40e0d0" stop-opacity="0.3"/><stop offset="100%" stop-color="#40e0d0" stop-opacity="0"/></radialGradient></defs>
+        <circle cx="32" cy="32" r="28" fill="url(#ptGrad)"/>
+        <polygon points="32,4 53,18 53,46 32,60 11,46 11,18" fill="#002a28" stroke="#40e0d0" stroke-width="2.5"/>
+        <polygon points="32,10 48,21 48,43 32,56 16,43 16,21" fill="#40e0d0" opacity="0.7"/>
+        <polygon points="32,17 41,25 41,39 32,47 23,39 23,25" fill="#005550" stroke="#b0fff5" stroke-width="1.5"/>
+        <text x="32" y="39" text-anchor="middle" font-size="9" font-weight="900" fill="#d0fff8" font-family="sans-serif">III</text>
+        <circle cx="32" cy="6" r="3" fill="#40e0d0"/>
+        <circle cx="11" cy="20" r="2" fill="#40e0d0" opacity="0.7"/>
+        <circle cx="53" cy="20" r="2" fill="#40e0d0" opacity="0.7"/>
+      </svg>`,
+
+      // DIAMOND — multi-faceted gem
+      'Diamond I': `<svg viewBox="0 0 64 64" fill="none">
+        <polygon points="32,6 52,26 32,58 12,26" fill="#0d2a4a" stroke="#60a5fa" stroke-width="2"/>
+        <polygon points="32,12 47,26 32,52 17,26" fill="#60a5fa" opacity="0.55"/>
+        <line x1="32" y1="12" x2="32" y2="52" stroke="#93c5fd" stroke-width="1" opacity="0.5"/>
+        <line x1="17" y1="26" x2="47" y2="26" stroke="#93c5fd" stroke-width="1" opacity="0.5"/>
+        <text x="32" y="34" text-anchor="middle" font-size="11" font-weight="900" fill="#bfdbfe" font-family="sans-serif">I</text>
+      </svg>`,
+      'Diamond II': `<svg viewBox="0 0 64 64" fill="none">
+        <polygon points="32,5 54,25 32,59 10,25" fill="#0d2a4a" stroke="#60a5fa" stroke-width="2"/>
+        <polygon points="32,11 49,25 32,53 15,25" fill="#60a5fa" opacity="0.6"/>
+        <polygon points="32,18 42,26 32,44 22,26" fill="#1a3a6a" stroke="#93c5fd" stroke-width="1.5"/>
+        <line x1="32" y1="11" x2="32" y2="18" stroke="#93c5fd" stroke-width="1"/>
+        <line x1="49" y1="25" x2="42" y2="26" stroke="#93c5fd" stroke-width="1"/>
+        <line x1="15" y1="25" x2="22" y2="26" stroke="#93c5fd" stroke-width="1"/>
+        <text x="32" y="34" text-anchor="middle" font-size="9" font-weight="900" fill="#bfdbfe" font-family="sans-serif">II</text>
+      </svg>`,
+      'Diamond III': `<svg viewBox="0 0 64 64" fill="none">
+        <defs><radialGradient id="diaGrad" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#93c5fd" stop-opacity="0.4"/><stop offset="100%" stop-color="#60a5fa" stop-opacity="0"/></radialGradient></defs>
+        <circle cx="32" cy="32" r="28" fill="url(#diaGrad)"/>
+        <polygon points="32,4 55,24 55,30 32,60 9,30 9,24" fill="#0d2a4a" stroke="#60a5fa" stroke-width="2.5"/>
+        <polygon points="32,10 50,25 50,29 32,54 14,29 14,25" fill="#60a5fa" opacity="0.65"/>
+        <polygon points="32,18 43,26 43,30 32,44 21,30 21,26" fill="#1a3a6a" stroke="#93c5fd" stroke-width="1.5"/>
+        <line x1="9" y1="24" x2="32" y2="18" stroke="#93c5fd" stroke-width="0.8" opacity="0.6"/>
+        <line x1="55" y1="24" x2="32" y2="18" stroke="#93c5fd" stroke-width="0.8" opacity="0.6"/>
+        <text x="32" y="35" text-anchor="middle" font-size="8" font-weight="900" fill="#dbeafe" font-family="sans-serif">III</text>
+      </svg>`,
+
+      // ELITE — radiant, glowing, powerful
+      'Elite I': `<svg viewBox="0 0 64 64" fill="none">
+        <defs><radialGradient id="e1g" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#f472b6" stop-opacity="0.5"/><stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/></radialGradient></defs>
+        <circle cx="32" cy="32" r="28" fill="url(#e1g)"/>
+        <polygon points="32,4 36,18 50,12 42,24 58,26 45,34 50,48 36,42 32,56 28,42 14,48 19,34 6,26 22,24 14,12 28,18" fill="#2d0845" stroke="#f472b6" stroke-width="1.8"/>
+        <polygon points="32,10 35,20 45,16 39,24 51,26 41,32 45,43 35,38 32,48 29,38 19,43 23,32 13,26 25,24 19,16 29,20" fill="#f472b6" opacity="0.75"/>
+        <circle cx="32" cy="32" r="8" fill="#1a0030" stroke="#f9a8d4" stroke-width="2"/>
+        <text x="32" y="37" text-anchor="middle" font-size="11" font-weight="900" fill="#fce7f3" font-family="sans-serif">I</text>
+      </svg>`,
+      'Elite II': `<svg viewBox="0 0 64 64" fill="none">
+        <defs><radialGradient id="e2g" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#f472b6" stop-opacity="0.6"/><stop offset="100%" stop-color="#4c1d95" stop-opacity="0"/></radialGradient></defs>
+        <circle cx="32" cy="32" r="29" fill="url(#e2g)"/>
+        <polygon points="32,3 36,17 51,11 42,23 59,25 45,33 51,48 36,41 32,57 28,41 13,48 19,33 5,25 22,23 13,11 28,17" fill="#2d0845" stroke="#f472b6" stroke-width="2"/>
+        <polygon points="32,9 35,19 46,15 39,23 52,25 41,31 45,43 34,37 32,48 30,37 19,43 23,31 12,25 25,23 18,15 29,19" fill="#f472b6" opacity="0.82"/>
+        <circle cx="32" cy="32" r="9" fill="#1a0030" stroke="#f9a8d4" stroke-width="2"/>
+        <text x="32" y="37" text-anchor="middle" font-size="10" font-weight="900" fill="#fce7f3" font-family="sans-serif">II</text>
+        <circle cx="32" cy="5" r="3" fill="#f472b6"/>
+        <circle cx="8" cy="17" r="2" fill="#f472b6" opacity="0.7"/>
+        <circle cx="56" cy="17" r="2" fill="#f472b6" opacity="0.7"/>
+      </svg>`,
+      'Elite III': `<svg viewBox="0 0 64 64" fill="none">
+        <defs>
+          <radialGradient id="e3g" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#f472b6" stop-opacity="0.7"/><stop offset="70%" stop-color="#7c3aed" stop-opacity="0.3"/><stop offset="100%" stop-color="#000" stop-opacity="0"/></radialGradient>
+          <radialGradient id="e3core" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fce7f3"/><stop offset="100%" stop-color="#f472b6"/></radialGradient>
+        </defs>
+        <circle cx="32" cy="32" r="30" fill="url(#e3g)"/>
+        <polygon points="32,2 37,16 52,10 43,22 60,24 46,33 52,49 37,41 32,58 27,41 12,49 18,33 4,24 21,22 12,10 27,16" fill="#1a0030" stroke="#f472b6" stroke-width="2.2"/>
+        <polygon points="32,8 36,18 47,14 40,22 53,24 42,31 46,43 35,37 32,48 29,37 18,43 22,31 11,24 24,22 17,14 28,18" fill="#f472b6" opacity="0.88"/>
+        <circle cx="32" cy="32" r="10" fill="url(#e3core)" opacity="0.9"/>
+        <text x="32" y="37" text-anchor="middle" font-size="8" font-weight="900" fill="#1a0030" font-family="sans-serif">III</text>
+        <circle cx="32" cy="4" r="3.5" fill="#f472b6"/>
+        <circle cx="7" cy="16" r="2.5" fill="#f472b6" opacity="0.8"/>
+        <circle cx="57" cy="16" r="2.5" fill="#f472b6" opacity="0.8"/>
+        <circle cx="4" cy="32" r="2" fill="#7c3aed" opacity="0.6"/>
+        <circle cx="60" cy="32" r="2" fill="#7c3aed" opacity="0.6"/>
+      </svg>`,
+    };
+
+    // ══════════════════════════════════════════════════════════════
+    //  RANK DATA
+    // ══════════════════════════════════════════════════════════════
+    const TIERS = [
+      { label: 'Bronze',   color: '#cd7f32', glow: 'rgba(205,127,50,0.5)',  bar: 'linear-gradient(90deg,#8b4513,#cd7f32)',  xp: [5,  10, 15]  },
+      { label: 'Silver',   color: '#c0c0c0', glow: 'rgba(192,192,192,0.4)', bar: 'linear-gradient(90deg,#808080,#d0d0d0)',  xp: [20, 30, 40]  },
+      { label: 'Gold',     color: '#ffd700', glow: 'rgba(255,215,0,0.5)',   bar: 'linear-gradient(90deg,#b8860b,#ffd700)',  xp: [55, 70, 90]  },
+      { label: 'Platinum', color: '#40e0d0', glow: 'rgba(64,224,208,0.5)',  bar: 'linear-gradient(90deg,#008080,#40e0d0)',  xp: [110,140,175] },
+      { label: 'Diamond',  color: '#60a5fa', glow: 'rgba(96,165,250,0.5)',  bar: 'linear-gradient(90deg,#1d4ed8,#93c5fd)',  xp: [220,275,340] },
+      { label: 'Elite',    color: '#f472b6', glow: 'rgba(244,114,182,0.6)', bar: 'linear-gradient(90deg,#7c3aed,#f472b6)',  xp: [420,510,9999]},
+    ];
+
+    const RANKS = [];
+    const NUMS = ['I','II','III'];
+    TIERS.forEach(t => {
+      NUMS.forEach((num, i) => {
+        RANKS.push({ name: `${t.label} ${num}`, tier: t.label, tierIdx: TIERS.indexOf(t), subIdx: i, color: t.color, glow: t.glow, bar: t.bar, xpNeeded: t.xp[i] });
+      });
+    });
+
+    // ── STAT HELPERS ─────────────────────────────────────────────
+    function getStats() {
+      return {
+        xp: parseInt(localStorage.getItem('ytdl_xp')||'0'),
+        downloads: parseInt(localStorage.getItem('ytdl_downloads')||'0'),
+        history: JSON.parse(localStorage.getItem('ytdl_history')||'[]'),
+      };
+    }
+    function saveStats(xp, downloads, history) {
+      localStorage.setItem('ytdl_xp', xp);
+      localStorage.setItem('ytdl_downloads', downloads);
+      localStorage.setItem('ytdl_history', JSON.stringify(history));
+    }
+    function getRankIdx(xp) {
+      let cum = 0;
+      for (let i = 0; i < RANKS.length; i++) {
+        cum += RANKS[i].xpNeeded;
+        if (xp < cum) return i;
+      }
+      return RANKS.length - 1;
+    }
+    function getXpInRank(xp, idx) {
+      let cum = 0;
+      for (let i = 0; i < idx; i++) cum += RANKS[i].xpNeeded;
+      return xp - cum;
+    }
+
+    // ── RENDER RANK ───────────────────────────────────────────────
+    function renderRank(animate = false) {
+      const { xp, downloads } = getStats();
+      const idx = getRankIdx(xp);
+      const rank = RANKS[idx];
+      const xpIn = getXpInRank(xp, idx);
+      const pct = rank.xpNeeded >= 9999 ? 100 : Math.min(100, (xpIn / rank.xpNeeded) * 100);
+      const left = rank.xpNeeded >= 9999 ? '∞' : rank.xpNeeded - xpIn;
+
+      // Text
+      document.getElementById('rankTierLabel').textContent = rank.tier;
+      document.getElementById('rankName').textContent = rank.name;
+      document.getElementById('rankName').style.color = rank.color;
+      document.getElementById('rankSub').textContent = `${xp} XP • ${downloads} downloads`;
+      document.getElementById('dlCount').textContent = downloads;
+      document.getElementById('xpLabel').textContent = `${xpIn} / ${rank.xpNeeded >= 9999 ? '∞' : rank.xpNeeded} XP`;
+      document.getElementById('xpNext').textContent = rank.xpNeeded >= 9999 ? '👑 MAX RANK' : `${left} XP to next`;
+
+      // XP bar
+      const fill = document.getElementById('xpBarFill');
+      fill.style.background = rank.bar;
+      fill.style.boxShadow = `0 0 14px ${rank.glow}`;
+      fill.style.width = pct + '%';
+
+      // Card
+      const card = document.getElementById('rankCard');
+      card.style.setProperty('--rc', rank.color);
+      card.style.borderColor = rank.color + '44';
+
+      // Card glow bg
+      const glow = document.getElementById('rankCardGlow');
+      glow.style.background = `radial-gradient(ellipse at 20% 20%, ${rank.color}, transparent 65%)`;
+
+      // Icon
+      const iconWrap = document.getElementById('rankIconWrap');
+      iconWrap.innerHTML = RANK_ICONS[rank.name] || RANK_ICONS['Bronze I'];
+      iconWrap.style.filter = `drop-shadow(0 0 12px ${rank.glow})`;
+
+      // Pips (3 bars for I/II/III)
+      const pipsEl = document.getElementById('rankPips');
+      pipsEl.innerHTML = '';
+      for (let i = 0; i < 3; i++) {
+        const p = document.createElement('div');
+        p.className = 'pip';
+        if (i <= rank.subIdx) {
+          p.style.background = rank.bar;
+          p.style.boxShadow = `0 0 8px ${rank.glow}`;
+        }
+        pipsEl.appendChild(p);
+      }
+
+      if (animate) {
+        iconWrap.classList.remove('pop');
+        void iconWrap.offsetWidth;
+        iconWrap.classList.add('pop');
+        card.classList.remove('pulse');
+        void card.offsetWidth;
+        card.classList.add('pulse');
+      }
+    }
+
+    // ── XP POPUP + PARTICLES ──────────────────────────────────────
+    function spawnXpPopup(xp, color) {
+      const el = document.createElement('div');
+      el.className = 'xp-popup';
+      el.textContent = `+${xp} XP`;
+      el.style.color = color;
+      el.style.textShadow = `0 0 16px ${color}`;
+      el.style.left = (150 + Math.random() * 200) + 'px';
+      el.style.top = '340px';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1600);
+    }
+
+    function spawnParticles(color) {
+      for (let i = 0; i < 14; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const angle = (i / 14) * 360;
+        const dist = 40 + Math.random() * 60;
+        const tx = Math.cos(angle * Math.PI / 180) * dist;
+        const ty = Math.sin(angle * Math.PI / 180) * dist - 40;
+        p.style.setProperty('--tx', tx + 'px');
+        p.style.setProperty('--ty', ty + 'px');
+        p.style.setProperty('--dur', (0.6 + Math.random() * 0.6) + 's');
+        p.style.background = color;
+        p.style.width = p.style.height = (4 + Math.random() * 5) + 'px';
+        p.style.left = (180 + Math.random() * 160) + 'px';
+        p.style.top = '390px';
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 1300);
+      }
+    }
+
+    // ── RANK UP OVERLAY ───────────────────────────────────────────
+    function showRankUpOverlay(rank) {
+      const overlay = document.getElementById('rankupOverlay');
+      const flash = document.getElementById('rankupFlash');
+      const bigIcon = document.getElementById('rankupBigIcon');
+      const name = document.getElementById('rankupName');
+      const sub = document.getElementById('rankupSub');
+
+      bigIcon.innerHTML = RANK_ICONS[rank.name] || '';
+      bigIcon.style.setProperty('--rc2', rank.color);
+      name.textContent = rank.name;
+      name.style.color = rank.color;
+      sub.textContent = `Welcome to ${rank.tier}!`;
+      flash.style.background = `radial-gradient(ellipse at center, ${rank.color} 0%, transparent 70%)`;
+
+      overlay.classList.remove('show');
+      void overlay.offsetWidth;
+      overlay.classList.add('show');
+      setTimeout(() => overlay.classList.remove('show'), 2900);
+
+      // Also show toast after overlay
+      setTimeout(() => showToast(rank), 400);
+    }
+
+    function showToast(rank) {
+      document.getElementById('toastIcon').innerHTML = RANK_ICONS[rank.name] || '';
+      document.getElementById('toastName').textContent = rank.name;
+      document.getElementById('toastName').style.color = rank.color;
+      const toast = document.getElementById('levelupToast');
+      toast.style.borderColor = rank.color + '55';
+      toast.style.boxShadow = `0 16px 48px rgba(0,0,0,0.8), 0 0 30px ${rank.glow}`;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    // ── ADD XP ────────────────────────────────────────────────────
+    function addXp(amount, videoId) {
+      const { xp, downloads, history } = getStats();
+      const oldIdx = getRankIdx(xp);
+      const newXp = xp + amount;
+      const newIdx = getRankIdx(newXp);
+      saveStats(newXp, downloads + 1, history);
+
+      spawnXpPopup(amount, RANKS[newIdx].color);
+      spawnParticles(RANKS[newIdx].color);
+      renderRank(true);
+
+      if (newIdx > oldIdx) {
+        setTimeout(() => showRankUpOverlay(RANKS[newIdx]), 300);
+      }
+    }
+
+    // ── DUPLICATE CHECK ───────────────────────────────────────────
+    function isNewVideo(videoId) {
+      const { history } = getStats();
+      return !history.includes(videoId);
+    }
+
+    function markVideoDownloaded(videoId) {
+      const { xp, downloads, history } = getStats();
+      if (!history.includes(videoId)) {
+        history.push(videoId);
+        saveStats(xp, downloads, history);
+      }
+    }
+
+    // ── INIT ──────────────────────────────────────────────────────
+    renderRank();
+
+    // ── KEY ROTATION ─────────────────────────────────────────────
     const STORAGE_KEY = 'ytdl_exhausted';
-    const MONTH_KEY   = 'ytdl_month';
-
+    const DAY_KEY = 'ytdl_day';
     function getExhausted() {
-      const now = new Date();
-      const thisMonth = `${now.getFullYear()}-${now.getMonth()}`;
-      const savedMonth = localStorage.getItem(MONTH_KEY);
-
-      // New month — wipe exhausted list so all keys are fresh again
-      if (savedMonth !== thisMonth) {
-        localStorage.setItem(MONTH_KEY, thisMonth);
+      const today = new Date().toISOString().slice(0,10);
+      if (localStorage.getItem(DAY_KEY) !== today) {
+        localStorage.setItem(DAY_KEY, today);
         localStorage.removeItem(STORAGE_KEY);
         return new Set();
       }
-
-      const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? new Set(JSON.parse(saved)) : new Set();
+      const s = localStorage.getItem(STORAGE_KEY);
+      return s ? new Set(JSON.parse(s)) : new Set();
     }
+    function markExhausted(key) { const e = getExhausted(); e.add(key); localStorage.setItem(STORAGE_KEY, JSON.stringify([...e])); }
+    function getNextKey() { const e = getExhausted(); return RAPIDAPI_KEYS.find(k => !e.has(k)) || null; }
 
-    function markExhausted(key) {
-      const exhausted = getExhausted();
-      exhausted.add(key);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([...exhausted]));
-    }
-
-    function getNextKey() {
-      const exhausted = getExhausted();
-      return RAPIDAPI_KEYS.find(k => !exhausted.has(k)) || null;
-    }
-
+    // ── HELPERS ───────────────────────────────────────────────────
     function setStatus(msg, type = '') {
       const el = document.getElementById('status');
       el.className = 'status ' + type;
       el.innerHTML = type === 'loading' ? `<div class="spinner"></div>${msg}` : msg;
     }
-
     function extractVideoId(url) {
       try {
         const u = new URL(url);
@@ -278,98 +678,99 @@
         return u.searchParams.get('v');
       } catch { return null; }
     }
-
     function formatDuration(s) {
       if (!s) return '';
-      const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
-      return h > 0
-        ? `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`
-        : `${m}:${String(sec).padStart(2,'0')}`;
+      const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+      return h > 0 ? `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}` : `${m}:${String(sec).padStart(2,'0')}`;
     }
 
-    async function fetchWithRotation(videoId) {
-      while (true) {
-        const key = getNextKey();
-        if (!key) throw new Error('All API keys have hit their monthly limit. Add more keys in the config.');
-
-        const res = await fetch(`https://yt-api.p.rapidapi.com/dl?id=${videoId}`, {
-          headers: {
-            'x-rapidapi-host': 'yt-api.p.rapidapi.com',
-            'x-rapidapi-key': key
-          }
-        });
-
-        // 429 = this key is rate limited — mark it and try the next one
-        if (res.status === 429) {
-          markExhausted(key);
-          continue;
-        }
-
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.message || `Error ${res.status}`);
-        }
-
-        return res.json();
+    // ── API FETCH ─────────────────────────────────────────────────
+    async function pollProgress(progressUrl) {
+      for (let i = 0; i < 60; i++) {
+        await new Promise(r => setTimeout(r, 1000));
+        const res = await fetch(progressUrl).catch(() => null);
+        if (!res || !res.ok) continue;
+        const data = await res.json().catch(() => null);
+        if (!data) continue;
+        const dlUrl = data.download_url || data.url || data.link || data.result?.url || data.file?.url || null;
+        if (dlUrl) return dlUrl;
+        const progress = data.progress ?? data.percent ?? -1;
+        if (progress >= 100) return data.download_url || data.url || null;
+        const status = (data.status || data.state || '').toLowerCase();
+        if (['done','finished','complete','completed','success'].includes(status)) return data.download_url || data.url || null;
       }
+      return null;
     }
+
+    async function fetchOneFormat(videoUrl, format, isAudio, key) {
+      const params = new URLSearchParams({ format, add_info: '0', url: videoUrl, audio_quality: '128', allow_extended_duration: 'false', no_merge: 'false', audio_language: 'en' });
+      const res = await fetch(`https://youtube-info-download-api.p.rapidapi.com/ajax/download.php?${params}`, {
+        headers: { 'x-rapidapi-host': 'youtube-info-download-api.p.rapidapi.com', 'x-rapidapi-key': key }
+      });
+      if (!res.ok) return null;
+      const data = await res.json().catch(() => null);
+      if (!data || !data.success) return null;
+      const progressUrl = data.progress_url;
+      if (!progressUrl) return null;
+      setStatus(`Processing ${format}p...`, 'loading');
+      const dlUrl = await pollProgress(progressUrl);
+      if (!dlUrl) return null;
+      return { label: format + 'p', ext: 'MP4', isAudio, dlUrl, title: data.title || '', thumbnail: data.info?.image || '' };
+    }
+
+    async function fetchWithRotation(videoUrl) {
+      const key = getNextKey();
+      if (!key) throw new Error('Daily limit reached. Try again tomorrow.');
+      const results = [];
+      for (const fmt of ['1080','720']) {
+        const r = await fetchOneFormat(videoUrl, fmt, false, key);
+        if (r) results.push(r);
+      }
+      if (results.length > 0) return results;
+      throw new Error('Could not process video. Try again.');
+    }
+
+    // ── MAIN FETCH ────────────────────────────────────────────────
+    let currentVideoId = null;
 
     async function fetchVideo() {
       const url = document.getElementById('urlInput').value.trim();
       const panel = document.getElementById('resultPanel');
+      const dupWarn = document.getElementById('dupWarning');
 
       if (!url) { setStatus('Please enter a YouTube URL.', 'error'); return; }
-
       const videoId = extractVideoId(url);
       if (!videoId) { setStatus('Invalid YouTube URL.', 'error'); return; }
 
+      currentVideoId = videoId;
+      dupWarn.style.display = 'none';
+
       panel.classList.remove('visible');
       document.getElementById('fetchBtn').disabled = true;
-      setStatus('Fetching video info…', 'loading');
+      setStatus('Starting...', 'loading');
 
       try {
-        const data = await fetchWithRotation(videoId);
+        const results = await fetchWithRotation(url);
+        const first = results[0];
 
-        document.getElementById('videoTitle').textContent = data.title || 'Unknown title';
-        document.getElementById('videoDuration').textContent = data.lengthSeconds
-          ? formatDuration(parseInt(data.lengthSeconds)) : '';
-        document.getElementById('thumb').src =
-          data.thumbnail?.[data.thumbnail.length - 1]?.url
-          || `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+        document.getElementById('videoTitle').textContent = first.title || 'Unknown title';
+        document.getElementById('videoDuration').textContent = '';
+        document.getElementById('thumb').src = first.thumbnail || `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
 
         const grid = document.getElementById('formatsGrid');
         grid.innerHTML = '';
 
-        const allFormats = [...(data.formats || []), ...(data.adaptiveFormats || [])];
-        const usable = allFormats.filter(f => f.url && (f.qualityLabel || f.audioQuality));
-
-        if (!usable.length) {
-          grid.innerHTML = '<p style="font-size:13px;color:var(--muted);padding:6px 4px">No formats found for this video.</p>';
-        } else {
-          const sorted = [
-            ...usable.filter(f => f.qualityLabel).sort((a,b) => (parseInt(b.qualityLabel)||0) - (parseInt(a.qualityLabel)||0)),
-            ...usable.filter(f => !f.qualityLabel && f.audioQuality)
-          ];
-
-          sorted.slice(0, 12).forEach(f => {
-            const isAudio = !f.qualityLabel && f.audioQuality;
-            const label   = f.qualityLabel || (f.audioQuality === 'AUDIO_QUALITY_MEDIUM' ? '128k' : '48k');
-            const mime    = f.mimeType?.split(';')[0] || '';
-            const ext     = mime.includes('mp4') ? 'MP4' : mime.includes('webm') ? 'WebM' : 'Audio';
-            const size    = f.contentLength ? `${(f.contentLength / 1048576).toFixed(1)} MB` : '';
-
-            const row = document.createElement('div');
-            row.className = 'format-row';
-            row.innerHTML = `
-              <div class="format-info">
-                <span class="format-quality">${label}</span>
-                <span class="format-tag ${isAudio ? 'audio' : ''}">${ext}</span>
-                ${size ? `<span class="format-size">${size}</span>` : ''}
-              </div>
-              <a class="dl-btn" href="${f.url}" target="_blank" rel="noopener">Download</a>`;
-            grid.appendChild(row);
-          });
-        }
+        results.forEach(f => {
+          const row = document.createElement('div');
+          row.className = 'format-row';
+          row.innerHTML = `
+            <div class="format-info">
+              <span class="format-quality">${f.label}</span>
+              <span class="format-tag">${f.ext}</span>
+            </div>
+            <a class="dl-btn" href="${f.dlUrl}" download target="_blank" rel="noopener" onclick="handleDownload('${videoId}')">Download</a>`;
+          grid.appendChild(row);
+        });
 
         panel.classList.add('visible');
         setStatus('');
@@ -377,6 +778,17 @@
         setStatus(err.message, 'error');
       } finally {
         document.getElementById('fetchBtn').disabled = false;
+      }
+    }
+
+    function handleDownload(videoId) {
+      const dupWarn = document.getElementById('dupWarning');
+      if (isNewVideo(videoId)) {
+        dupWarn.style.display = 'none';
+        markVideoDownloaded(videoId);
+        addXp(10, videoId);
+      } else {
+        dupWarn.style.display = 'flex';
       }
     }
 
