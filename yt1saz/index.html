@@ -69,91 +69,154 @@
     .xp-bar-fill::after { content: ''; position: absolute; top: 0; left: -100%; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent); animation: shimmer 2.2s infinite; }
     .xp-bar-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--muted); }
 
-    /* ═══ RANK UP SCREEN ═══ */
+    /* ═══ FORTNITE-STYLE RANK UP SCREEN ═══ */
     .rankup-overlay {
       position: fixed; inset: 0; z-index: 900;
-      display: none; align-items: center; justify-content: center;
-      background: #06060a; pointer-events: all;
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      pointer-events: all; overflow: hidden;
     }
     .rankup-overlay.active { display: flex; }
 
-    /* Phase 1 — bar fill */
-    .rankup-phase-bar {
-      display: flex; flex-direction: column; align-items: center;
-      gap: 24px; width: 100%; padding: 0 48px;
-      animation: fadeUp 0.4s ease both;
+    /* Dim background */
+    .rankup-bg {
+      position: absolute; inset: 0;
+      background: rgba(4,4,10,0.92);
+      backdrop-filter: blur(4px);
     }
-    .rankup-phase-title {
-      font-size: 12px; font-weight: 800; letter-spacing: 4px;
-      text-transform: uppercase; color: var(--muted);
+
+    /* Phase 1 — XP bar at bottom filling up */
+    .ru-phase1 {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-end;
+      padding-bottom: 80px; z-index: 2;
     }
-    .rankup-filling-bar-wrap {
-      width: 100%; height: 14px; background: rgba(255,255,255,0.07);
-      border-radius: 100px; overflow: visible; position: relative;
+    .ru-xp-label {
+      font-size: 13px; font-weight: 800; letter-spacing: 4px;
+      text-transform: uppercase; color: rgba(255,255,255,0.4);
+      margin-bottom: 16px;
     }
-    .rankup-filling-bar {
+    .ru-bar-wrap {
+      width: min(480px, 85vw); height: 16px;
+      background: rgba(255,255,255,0.08); border-radius: 100px;
+      overflow: hidden; position: relative;
+    }
+    .ru-bar-fill {
       height: 100%; width: 0%; border-radius: 100px;
-      transition: width 1.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: width 1.8s cubic-bezier(0.3, 0, 0.1, 1);
       position: relative;
     }
-    .rankup-filling-bar::after {
-      content: ''; position: absolute; top: 0; left: -60%; right: 0; bottom: 0;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
-      animation: shimmer 1.5s infinite;
+    .ru-bar-fill::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%);
+      animation: shimmer 1.4s infinite;
     }
-    .rankup-filling-glow {
-      position: absolute; top: 50%; right: 0;
-      transform: translate(50%, -50%);
-      width: 28px; height: 28px; border-radius: 50%;
-      filter: blur(8px); transition: right 1.6s cubic-bezier(0.4,0,0.2,1);
+    .ru-bar-dot {
+      position: absolute; top: 50%; right: -1px;
+      transform: translateY(-50%);
+      width: 20px; height: 20px; border-radius: 50%;
+      filter: blur(6px);
     }
-    .rankup-filling-label {
-      font-size: 28px; font-weight: 900; letter-spacing: -1px;
+    .ru-gain-text {
+      font-size: 32px; font-weight: 900; letter-spacing: -1px;
+      margin-top: 20px; opacity: 0;
+      animation: gainPop 0.5s cubic-bezier(0.175,0.885,0.32,1.4) 0.3s forwards;
     }
 
-    /* Phase 2 — reveal */
-    .rankup-phase-reveal {
-      display: flex; flex-direction: column; align-items: center;
-      text-align: center; padding: 0 32px; position: relative;
+    /* Flash overlay when bar hits 100% */
+    .ru-flash {
+      position: absolute; inset: 0; z-index: 3;
+      background: #fff; opacity: 0; pointer-events: none;
     }
-    .rankup-reveal-glow {
-      position: absolute; width: 400px; height: 400px;
+    .ru-flash.bang { animation: flashBang 0.5s ease forwards; }
+
+    /* Phase 2 — rank reveal */
+    .ru-phase2 {
+      position: absolute; inset: 0; z-index: 4;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+    }
+    .ru-phase2.show { opacity: 1; pointer-events: all; }
+
+    /* Shockwave rings */
+    .ru-ring {
+      position: absolute; border-radius: 50%;
+      width: 20px; height: 20px;
+      border: 3px solid var(--rc, #ffd700);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0; pointer-events: none;
+    }
+    .ru-ring.go { animation: ringExpand var(--rd, 0.9s) ease forwards; }
+
+    /* Background radial glow */
+    .ru-bg-glow {
+      position: absolute; width: 600px; height: 600px;
       border-radius: 50%; top: 50%; left: 50%;
-      transform: translate(-50%, -55%);
-      filter: blur(80px); opacity: 0.3; pointer-events: none;
-      animation: glowPulse 2s ease-in-out infinite alternate;
+      transform: translate(-50%, -50%);
+      filter: blur(100px); opacity: 0; pointer-events: none;
     }
-    .rankup-big-icon {
-      width: 130px; height: 130px; margin: 0 auto 24px;
-      position: relative; z-index: 1;
-      animation: iconReveal 0.8s cubic-bezier(0.175,0.885,0.32,1.4) both;
+    .ru-bg-glow.show { animation: bgGlowIn 0.8s ease 0.1s forwards; }
+
+    /* Icon container */
+    .ru-icon-wrap {
+      width: 150px; height: 150px; position: relative; z-index: 2;
+      opacity: 0; margin-bottom: 28px;
     }
-    .rankup-big-icon svg { width: 100%; height: 100%; }
-    .rankup-label {
-      font-size: 10px; font-weight: 900; letter-spacing: 6px;
-      text-transform: uppercase; opacity: 0.45;
-      animation: fadeUp 0.5s ease 0.3s both;
+    .ru-icon-wrap svg { width: 100%; height: 100%; }
+    .ru-icon-wrap.slam { animation: iconSlam 0.7s cubic-bezier(0.175,0.885,0.32,1.5) forwards; }
+
+    .ru-rank-up-text {
+      font-size: 11px; font-weight: 900; letter-spacing: 7px;
+      text-transform: uppercase; opacity: 0; color: rgba(255,255,255,0.45);
+      margin-bottom: 10px;
     }
-    .rankup-rank-name {
-      font-size: 48px; font-weight: 900; letter-spacing: -2px; margin-top: 8px;
-      animation: fadeUp 0.6s ease 0.4s both;
+    .ru-rank-up-text.show { animation: fadeUp 0.5s ease 0.35s forwards; }
+
+    .ru-rank-name {
+      font-size: 52px; font-weight: 900; letter-spacing: -2.5px;
+      opacity: 0; line-height: 1;
     }
-    .rankup-sub {
-      font-size: 14px; margin-top: 10px; opacity: 0.4;
-      animation: fadeUp 0.5s ease 0.5s both;
-    }
-    .rankup-tap {
-      font-size: 12px; margin-top: 40px; opacity: 0.25; letter-spacing: 1px;
-      animation: fadeUp 0.5s ease 0.8s both;
+    .ru-rank-name.show { animation: nameSlide 0.6s cubic-bezier(0.22,1,0.36,1) 0.45s forwards; }
+
+    .ru-tap-hint {
+      position: absolute; bottom: 40px;
+      font-size: 12px; opacity: 0; letter-spacing: 1.5px;
+      text-transform: uppercase; color: rgba(255,255,255,0.25);
+      animation: fadeUp 0.5s ease 1.2s forwards;
     }
 
-    @keyframes glowPulse { from { opacity: 0.2; } to { opacity: 0.45; } }
-    @keyframes iconReveal {
-      0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
-      60%  { transform: scale(1.2) rotate(5deg); opacity: 1; }
-      80%  { transform: scale(0.93) rotate(-2deg); }
+    @keyframes flashBang {
+      0%   { opacity: 0.9; }
+      100% { opacity: 0; }
+    }
+    @keyframes ringExpand {
+      0%   { transform: translate(-50%,-50%) scale(0); opacity: 0.9; }
+      100% { transform: translate(-50%,-50%) scale(18); opacity: 0; }
+    }
+    @keyframes bgGlowIn {
+      0%   { opacity: 0; }
+      100% { opacity: 0.28; }
+    }
+    @keyframes iconSlam {
+      0%   { transform: scale(0) rotate(-15deg); opacity: 0; }
+      55%  { transform: scale(1.28) rotate(4deg); opacity: 1; }
+      75%  { transform: scale(0.91) rotate(-2deg); opacity: 1; }
+      90%  { transform: scale(1.06); }
       100% { transform: scale(1) rotate(0deg); opacity: 1; }
     }
+    @keyframes nameSlide {
+      0%   { opacity: 0; transform: translateY(22px) scale(0.85); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes gainPop {
+      0%   { opacity: 0; transform: scale(0.5) translateY(10px); }
+      70%  { opacity: 1; transform: scale(1.1) translateY(-2px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes glowPulse { from { opacity: 0.2; } to { opacity: 0.4; } }
 
     /* ═══ TOAST ═══ */
     .levelup-toast {
@@ -253,16 +316,32 @@
 
   <!-- Rank up full-screen overlay -->
   <div class="rankup-overlay" id="rankupOverlay">
-    <div class="rankup-glow" id="rankupGlow"></div>
-    <div class="rankup-center">
-      <div class="rankup-big-icon" id="rankupBigIcon"></div>
-      <div class="rankup-label">Rank Up!</div>
-      <div class="rankup-rank-name" id="rankupName"></div>
-      <div class="rankup-sub" id="rankupSub"></div>
+    <div class="rankup-bg"></div>
+
+    <!-- Phase 1: XP bar filling at bottom -->
+    <div class="ru-phase1" id="ruPhase1">
+      <div class="ru-xp-label">Ranking Up</div>
+      <div class="ru-bar-wrap">
+        <div class="ru-bar-fill" id="ruBarFill">
+          <div class="ru-bar-dot" id="ruBarDot"></div>
+        </div>
+      </div>
+      <div class="ru-gain-text" id="ruGainText">+10 XP</div>
     </div>
-    <div class="rankup-xp-label" id="rankupXpLabel">+10 XP</div>
-    <div class="rankup-xp-bar-wrap">
-      <div class="rankup-xp-bar" id="rankupXpBar"></div>
+
+    <!-- Flash on bar complete -->
+    <div class="ru-flash" id="ruFlash"></div>
+
+    <!-- Phase 2: Reveal -->
+    <div class="ru-phase2" id="ruPhase2">
+      <div class="ru-bg-glow" id="ruBgGlow"></div>
+      <div class="ru-ring" id="ruRing1" style="--rd:0.8s"></div>
+      <div class="ru-ring" id="ruRing2" style="--rd:1.1s"></div>
+      <div class="ru-ring" id="ruRing3" style="--rd:1.4s"></div>
+      <div class="ru-icon-wrap" id="ruIcon"></div>
+      <div class="ru-rank-up-text" id="ruLabel">Rank Up!</div>
+      <div class="ru-rank-name" id="ruName"></div>
+      <div class="ru-tap-hint">Tap to continue</div>
     </div>
   </div>
 
@@ -689,12 +768,12 @@
     //  RANK DATA
     // ══════════════════════════════════════════════════════════════
     const TIERS = [
-      { label: 'Bronze',   color: '#cd7f32', glow: 'rgba(205,127,50,0.5)',  bar: 'linear-gradient(90deg,#8b4513,#cd7f32)',  xp: [5,  10, 15]  },
-      { label: 'Silver',   color: '#c0c0c0', glow: 'rgba(192,192,192,0.4)', bar: 'linear-gradient(90deg,#808080,#d0d0d0)',  xp: [20, 30, 40]  },
-      { label: 'Gold',     color: '#ffd700', glow: 'rgba(255,215,0,0.5)',   bar: 'linear-gradient(90deg,#b8860b,#ffd700)',  xp: [55, 70, 90]  },
-      { label: 'Platinum', color: '#40e0d0', glow: 'rgba(64,224,208,0.5)',  bar: 'linear-gradient(90deg,#008080,#40e0d0)',  xp: [110,140,175] },
-      { label: 'Diamond',  color: '#60a5fa', glow: 'rgba(96,165,250,0.5)',  bar: 'linear-gradient(90deg,#1d4ed8,#93c5fd)',  xp: [220,275,340] },
-      { label: 'Elite',    color: '#f472b6', glow: 'rgba(244,114,182,0.6)', bar: 'linear-gradient(90deg,#7c3aed,#f472b6)',  xp: [420,510,9999]},
+      { label: 'Bronze',   color: '#cd7f32', glow: 'rgba(205,127,50,0.5)',  bar: 'linear-gradient(90deg,#8b4513,#cd7f32)',  xp: [2000,  4000, 7000]  },
+      { label: 'Silver',   color: '#c0c0c0', glow: 'rgba(192,192,192,0.4)', bar: 'linear-gradient(90deg,#808080,#d0d0d0)',  xp: [12000, 18000, 25000]  },
+      { label: 'Gold',     color: '#ffd700', glow: 'rgba(255,215,0,0.5)',   bar: 'linear-gradient(90deg,#b8860b,#ffd700)',  xp: [35000, 50000, 70000]  },
+      { label: 'Platinum', color: '#40e0d0', glow: 'rgba(64,224,208,0.5)',  bar: 'linear-gradient(90deg,#008080,#40e0d0)',  xp: [100000, 140000, 190000] },
+      { label: 'Diamond',  color: '#60a5fa', glow: 'rgba(96,165,250,0.5)',  bar: 'linear-gradient(90deg,#1d4ed8,#93c5fd)',  xp: [250000, 350000, 500000] },
+      { label: 'Elite',    color: '#f472b6', glow: 'rgba(244,114,182,0.6)', bar: 'linear-gradient(90deg,#7c3aed,#f472b6)',  xp: [700000, 1000000, 99999999]},
     ];
 
     const RANKS = [];
@@ -738,17 +817,17 @@
       const idx = getRankIdx(xp);
       const rank = RANKS[idx];
       const xpIn = getXpInRank(xp, idx);
-      const pct = rank.xpNeeded >= 9999 ? 100 : Math.min(100, (xpIn / rank.xpNeeded) * 100);
-      const left = rank.xpNeeded >= 9999 ? '∞' : rank.xpNeeded - xpIn;
+      const pct = rank.xpNeeded >= 99999999 ? 100 : Math.min(100, (xpIn / rank.xpNeeded) * 100);
+      const left = rank.xpNeeded >= 99999999 ? '∞' : rank.xpNeeded - xpIn;
 
       // Text
       document.getElementById('rankTierLabel').textContent = rank.tier;
       document.getElementById('rankName').textContent = rank.name;
       document.getElementById('rankName').style.color = rank.color;
-      document.getElementById('rankSub').textContent = `${xp} XP • ${downloads} downloads`;
+      document.getElementById('rankSub').textContent = `${formatXP(xp)} XP • ${downloads} downloads`;
       document.getElementById('dlCount').textContent = downloads;
-      document.getElementById('xpLabel').textContent = `${xpIn} / ${rank.xpNeeded >= 9999 ? '∞' : rank.xpNeeded} XP`;
-      document.getElementById('xpNext').textContent = rank.xpNeeded >= 9999 ? '👑 MAX RANK' : `${left} XP to next`;
+      document.getElementById('xpLabel').textContent = `${formatXP(xpIn)} / ${rank.xpNeeded >= 99999999 ? '∞' : formatXP(rank.xpNeeded)} XP`;
+      document.getElementById('xpNext').textContent = rank.xpNeeded >= 99999999 ? '👑 MAX RANK' : `${formatXP(left)} XP to next`;
 
       // XP bar
       const fill = document.getElementById('xpBarFill');
@@ -826,48 +905,88 @@
       }
     }
 
-    // ── RANK UP OVERLAY ───────────────────────────────────────────
+    // ── RANK UP OVERLAY — FORTNITE STYLE ─────────────────────────
     function showRankUpOverlay(rank, xpGained) {
-      const overlay   = document.getElementById('rankupOverlay');
-      const bigIcon   = document.getElementById('rankupBigIcon');
-      const nameEl    = document.getElementById('rankupName');
-      const subEl     = document.getElementById('rankupSub');
-      const xpBar     = document.getElementById('rankupXpBar');
-      const xpLabel   = document.getElementById('rankupXpLabel');
-      const glowEl    = document.getElementById('rankupGlow');
+      const overlay  = document.getElementById('rankupOverlay');
+      const phase1   = document.getElementById('ruPhase1');
+      const phase2   = document.getElementById('ruPhase2');
+      const barFill  = document.getElementById('ruBarFill');
+      const barDot   = document.getElementById('ruBarDot');
+      const gainText = document.getElementById('ruGainText');
+      const flash    = document.getElementById('ruFlash');
+      const bgGlow   = document.getElementById('ruBgGlow');
+      const icon     = document.getElementById('ruIcon');
+      const label    = document.getElementById('ruLabel');
+      const nameEl   = document.getElementById('ruName');
+      const rings    = [document.getElementById('ruRing1'), document.getElementById('ruRing2'), document.getElementById('ruRing3')];
 
-      // Setup
-      overlay.className = 'rankup-overlay';
-      xpBar.classList.remove('full');
-      bigIcon.innerHTML = RANK_ICONS[rank.name] || '';
+      // ── RESET ──
+      overlay.className = 'rankup-overlay active';
+      phase1.style.opacity = '1';
+      phase2.classList.remove('show');
+      flash.classList.remove('bang');
+      bgGlow.classList.remove('show');
+      icon.classList.remove('slam');
+      label.classList.remove('show');
+      nameEl.classList.remove('show');
+      rings.forEach(r => { r.classList.remove('go'); r.style.setProperty('--rc', rank.color); });
+      barFill.style.transition = 'none';
+      barFill.style.width = '0%';
+
+      // ── SETUP COLORS ──
+      barFill.style.background = rank.bar;
+      barFill.style.boxShadow = `0 0 16px ${rank.glow}`;
+      barDot.style.background = rank.color;
+      gainText.textContent = `+${formatXP(xpGained)} XP`;
+      gainText.style.color = rank.color;
+      bgGlow.style.background = rank.color;
       nameEl.textContent = rank.name;
       nameEl.style.color = rank.color;
-      subEl.textContent = `Welcome to ${rank.tier}!`;
-      xpLabel.textContent = `+${xpGained} XP`;
-      xpBar.style.background = rank.bar;
-      xpBar.style.boxShadow = `0 0 12px ${rank.glow}`;
-      glowEl.style.background = `radial-gradient(circle, ${rank.glow}, transparent 70%)`;
+      icon.innerHTML = RANK_ICONS[rank.name] || '';
+      icon.style.filter = `drop-shadow(0 0 30px ${rank.glow})`;
 
-      // PHASE 1: Show dark screen + fill XP bar
-      // phase-bar handled
-      setTimeout(() => xpBar.classList.add('full'), 100);
+      // ── PHASE 1: Fill bar (1.8s) ──
+      void barFill.offsetWidth;
+      barFill.style.transition = 'width 1.8s cubic-bezier(0.3,0,0.1,1)';
+      setTimeout(() => { barFill.style.width = '100%'; }, 80);
 
-      // PHASE 2: Bar hits 100% → flash + reveal rank
+      // ── FLASH when bar completes ──
       setTimeout(() => {
-        // phase-reveal handled
-        // Animate icon
-        const iconSvg = bigIcon.querySelector('svg');
-        if (iconSvg) { iconSvg.style.animation = 'none'; void iconSvg.offsetWidth; iconSvg.style.animation = 'rankIconSpin 0.8s cubic-bezier(0.175,0.885,0.32,1.4) forwards'; }
-        // Particles burst
-        spawnParticles(rank.color);
-        spawnParticles(rank.color);
-      }, 1600);
+        flash.classList.add('bang');
+      }, 1900);
 
-      // PHASE 3: Dismiss
+      // ── PHASE 2: Reveal after flash ──
       setTimeout(() => {
+        phase1.style.opacity = '0';
+        phase2.classList.add('show');
+        bgGlow.classList.add('show');
+
+        // Shockwave rings staggered
+        rings.forEach((r, i) => {
+          setTimeout(() => { r.classList.add('go'); }, i * 120);
+        });
+
+        // Icon slams in
+        setTimeout(() => { icon.classList.add('slam'); }, 60);
+
+        // Text fades in
+        setTimeout(() => { label.classList.add('show'); }, 350);
+        setTimeout(() => { nameEl.classList.add('show'); }, 450);
+
+        // Particle burst
+        for (let i = 0; i < 3; i++) {
+          setTimeout(() => spawnParticles(rank.color), i * 150);
+        }
+      }, 2100);
+
+      // ── DISMISS: click or auto ──
+      const dismiss = () => {
         overlay.classList.remove('active');
+        overlay.removeEventListener('click', dismiss);
         showToast(rank);
-      }, 4200);
+      };
+      setTimeout(() => overlay.addEventListener('click', dismiss), 2500);
+      setTimeout(dismiss, 5500);
     }
 
     function showToast(rank) {
@@ -931,6 +1050,29 @@
     function markExhausted(key) { const e = getExhausted(); e.add(key); localStorage.setItem(STORAGE_KEY, JSON.stringify([...e])); }
     function getNextKey() { const e = getExhausted(); return RAPIDAPI_KEYS.find(k => !e.has(k)) || null; }
 
+    // ── XP HELPERS ───────────────────────────────────────────────
+    function formatXP(n) {
+      if (n >= 1000000) return (n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1) + 'M';
+      if (n >= 1000) return (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + 'K';
+      return n.toString();
+    }
+
+    function calcXP(durationSeconds) {
+      // Base: 500 XP for any download
+      // +1 XP per 2 seconds of video (so 10min = +300, 1hr = +1800)
+      // Bonus tiers: short <3min=500, medium 3-10min=1000, long 10-30min=2000, epic 30min+=4000
+      const s = durationSeconds || 0;
+      let xp = 500;
+      if (s < 180)       xp = 500;
+      else if (s < 600)  xp = 1000;
+      else if (s < 1800) xp = 2000;
+      else if (s < 3600) xp = 3500;
+      else               xp = 5000;
+      // Extra bonus per minute
+      xp += Math.floor(s / 60) * 10;
+      return Math.round(xp / 50) * 50; // round to nearest 50
+    }
+
     // ── HELPERS ───────────────────────────────────────────────────
     function setStatus(msg, type = '') {
       const el = document.getElementById('status');
@@ -968,36 +1110,30 @@
       return null;
     }
 
-    async function fetchOneFormat(videoUrl, format, isAudio, key) {
-      const params = new URLSearchParams({ format, add_info: '0', url: videoUrl, audio_quality: '128', allow_extended_duration: 'false', no_merge: 'false', audio_language: 'en' });
-      const res = await fetch(`https://youtube-info-download-api.p.rapidapi.com/ajax/download.php?${params}`, {
-        headers: { 'x-rapidapi-host': 'youtube-info-download-api.p.rapidapi.com', 'x-rapidapi-key': key }
-      });
-      if (!res.ok) return null;
-      const data = await res.json().catch(() => null);
-      if (!data || !data.success) return null;
-      const progressUrl = data.progress_url;
-      if (!progressUrl) return null;
-      setStatus(`Processing ${format}p...`, 'loading');
-      const dlUrl = await pollProgress(progressUrl);
-      if (!dlUrl) return null;
-      return { label: format + 'p', ext: 'MP4', isAudio, dlUrl, title: data.title || '', thumbnail: data.info?.image || '' };
-    }
+    const RENDER_API = 'https://ytdl-api-s34k.onrender.com';
 
     async function fetchWithRotation(videoUrl) {
-      const key = getNextKey();
-      if (!key) throw new Error('Daily limit reached. Try again tomorrow.');
-      const results = [];
-      for (const fmt of ['1080','720']) {
-        const r = await fetchOneFormat(videoUrl, fmt, false, key);
-        if (r) results.push(r);
-      }
-      if (results.length > 0) return results;
-      throw new Error('Could not process video. Try again.');
+      setStatus('Fetching video info...', 'loading');
+      const res = await fetch(`${RENDER_API}/download?url=${encodeURIComponent(videoUrl)}`);
+      if (!res.ok) throw new Error('API error. Try again.');
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      if (!data.formats || data.formats.length === 0) throw new Error('No formats found.');
+      currentVideoDuration = parseInt(data.duration || '0');
+      return data.formats.map(f => ({
+        label: f.label,
+        ext: f.ext || 'MP4',
+        isAudio: false,
+        dlUrl: f.url,
+        title: data.title || '',
+        thumbnail: data.thumbnail || '',
+        duration: data.duration || '0'
+      }));
     }
 
     // ── MAIN FETCH ────────────────────────────────────────────────
     let currentVideoId = null;
+    let currentVideoDuration = 0;
 
     async function fetchVideo() {
       const url = document.getElementById('urlInput').value.trim();
@@ -1020,7 +1156,7 @@
         const first = results[0];
 
         document.getElementById('videoTitle').textContent = first.title || 'Unknown title';
-        document.getElementById('videoDuration').textContent = '';
+        document.getElementById('videoDuration').textContent = first.duration ? formatDuration(parseInt(first.duration)) : '';
         document.getElementById('thumb').src = first.thumbnail || `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
 
         const grid = document.getElementById('formatsGrid');
@@ -1052,7 +1188,8 @@
       if (isNewVideo(videoId)) {
         dupWarn.style.display = 'none';
         markVideoDownloaded(videoId);
-        addXp(10, videoId);
+        const xpAmount = calcXP(currentVideoDuration);
+        addXp(xpAmount, videoId);
       } else {
         dupWarn.style.display = 'flex';
       }
