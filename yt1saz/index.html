@@ -1170,7 +1170,7 @@
               <span class="format-quality">${f.label}</span>
               <span class="format-tag">${f.ext}</span>
             </div>
-            <a class="dl-btn" href="${f.dlUrl}" download target="_blank" rel="noopener" onclick="handleDownload('${videoId}')">Download</a>`;
+            <button class="dl-btn" onclick="startDownload('${f.dlUrl}', '${f.label}', '${videoId}', this)">Download</button>`;
           grid.appendChild(row);
         });
 
@@ -1183,17 +1183,61 @@
       }
     }
 
-    function handleDownload(videoId) {
+    let pendingRankUp = null;
+
+    async function startDownload(dlUrl, label, videoId, btn) {
+      btn.textContent = 'Preparing...';
+      btn.disabled = true;
+
+      // Mark download and queue XP
       const dupWarn = document.getElementById('dupWarning');
       if (isNewVideo(videoId)) {
         dupWarn.style.display = 'none';
         markVideoDownloaded(videoId);
         const xpAmount = calcXP(currentVideoDuration);
-        addXp(xpAmount, videoId);
+        pendingRankUp = { xpAmount, videoId };
       } else {
         dupWarn.style.display = 'flex';
       }
+
+      try {
+        const res = await fetch(dlUrl);
+        if (!res.ok) throw new Error('Download failed');
+        const blob = await res.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `video_${label}.mp4`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        btn.textContent = 'Downloaded!';
+
+        // Show rank up after download completes
+        if (pendingRankUp) {
+          setTimeout(() => {
+            addXp(pendingRankUp.xpAmount, pendingRankUp.videoId);
+            pendingRankUp = null;
+          }, 500);
+        }
+      } catch (err) {
+        btn.textContent = 'Failed!';
+        setStatus('Download failed. Try again.', 'error');
+        pendingRankUp = null;
+      } finally {
+        setTimeout(() => { btn.textContent = 'Download'; btn.disabled = false; }, 3000);
+      }
     }
+
+    // Show pending rank up when user returns to tab
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && pendingRankUp) {
+        setTimeout(() => {
+          addXp(pendingRankUp.xpAmount, pendingRankUp.videoId);
+          pendingRankUp = null;
+        }, 500);
+      }
+    });
 
     document.getElementById('urlInput').addEventListener('keydown', e => {
       if (e.key === 'Enter') fetchVideo();
