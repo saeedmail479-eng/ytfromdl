@@ -1114,7 +1114,7 @@
 
     async function fetchWithRotation(videoUrl) {
       setStatus('Fetching video info...', 'loading');
-      const res = await fetch(`${RENDER_API}/download?url=${encodeURIComponent(videoUrl)}`);
+      const res = await fetch(`${RENDER_API}/info?url=${encodeURIComponent(videoUrl)}`);
       if (!res.ok) throw new Error('API error. Try again.');
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -1122,9 +1122,9 @@
       currentVideoDuration = parseInt(data.duration || '0');
       return data.formats.map(f => ({
         label: f.label,
-        ext: f.ext || 'MP4',
+        ext: 'MP4',
         isAudio: false,
-        dlUrl: f.url,
+        dlUrl: `${RENDER_API}/download?url=${encodeURIComponent(videoUrl)}&height=${f.height}&title=${encodeURIComponent(data.title || 'video')}`,
         title: data.title || '',
         thumbnail: data.thumbnail || '',
         duration: data.duration || '0'
