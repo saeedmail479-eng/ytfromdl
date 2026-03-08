@@ -419,9 +419,6 @@
 
   <script>
     // ─────────────────────────────────────────────────────────────
-    const RAPIDAPI_KEYS = [
-      "7fc93518d0msh49d3769e1ac4936p13973ajsn44efe8afd038",
-    ];
     // ─────────────────────────────────────────────────────────────
 
     // ══════════════════════════════════════════════════════════════
@@ -1035,6 +1032,12 @@
     renderRank();
 
     // ── KEY ROTATION ─────────────────────────────────────────────
+    const RAPIDAPI_KEYS = [
+      '7fc93518d0msh49d3769e1ac4936p13973ajsn44efe8afd038',
+      '056d3532acmshd0f2efdb9e697f8p1580f3jsn1f62148b5bae',
+      'fec31e9fb8mshd6b46147f385f8fp1ec7b8jsneebf954cf71c',
+      'e1e8b38e60msh48a3e0d337b32b0p142d5ejsndb7776ef738f'
+    ];
     const STORAGE_KEY = 'ytdl_exhausted';
     const DAY_KEY = 'ytdl_day';
     function getExhausted() {
@@ -1095,40 +1098,47 @@
     // ── API FETCH ─────────────────────────────────────────────────
     async function pollProgress(progressUrl) {
       for (let i = 0; i < 60; i++) {
-        await new Promise(r => setTimeout(r, 1000));
-        const res = await fetch(progressUrl).catch(() => null);
+        await new Promise(r => setTimeout(r, 1500));
+        const key = getNextKey() || RAPIDAPI_KEYS[0];
+        const res = await fetch(progressUrl, {
+          headers: { 'x-rapidapi-host': 'youtube-info-download-api.p.rapidapi.com', 'x-rapidapi-key': key }
+        }).catch(() => null);
         if (!res || !res.ok) continue;
         const data = await res.json().catch(() => null);
         if (!data) continue;
-        const dlUrl = data.download_url || data.url || data.link || data.result?.url || data.file?.url || null;
-        if (dlUrl) return dlUrl;
-        const progress = data.progress ?? data.percent ?? -1;
-        if (progress >= 100) return data.download_url || data.url || null;
-        const status = (data.status || data.state || '').toLowerCase();
-        if (['done','finished','complete','completed','success'].includes(status)) return data.download_url || data.url || null;
+        if (data.download_url) return data.download_url;
+        if (data.error) return null;
       }
       return null;
     }
 
-    const RENDER_API = 'https://ytdl-api-s34k.onrender.com';
+    async function fetchOneFormat(videoUrl, format, key) {
+      const params = new URLSearchParams({ format, add_info: '0', url: videoUrl, audio_quality: '128', allow_extended_duration: 'false', no_merge: 'false', audio_language: 'en' });
+      const res = await fetch(`https://youtube-info-download-api.p.rapidapi.com/ajax/download.php?${params}`, {
+        headers: { 'x-rapidapi-host': 'youtube-info-download-api.p.rapidapi.com', 'x-rapidapi-key': key }
+      });
+      if (!res.ok) return null;
+      const data = await res.json().catch(() => null);
+      if (!data || !data.success) return null;
+      const progressUrl = data.progress_url;
+      if (!progressUrl) return null;
+      setStatus(`Processing ${format}p...`, 'loading');
+      const dlUrl = await pollProgress(progressUrl);
+      if (!dlUrl) return null;
+      return { label: format + 'p', ext: 'MP4', isAudio: false, dlUrl, title: data.title || '', thumbnail: data.info?.image || '', duration: data.info?.duration || '0' };
+    }
 
     async function fetchWithRotation(videoUrl) {
-      setStatus('Fetching video info...', 'loading');
-      const res = await fetch(`${RENDER_API}/info?url=${encodeURIComponent(videoUrl)}`);
-      if (!res.ok) throw new Error('API error. Try again.');
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      if (!data.formats || data.formats.length === 0) throw new Error('No formats found.');
-      currentVideoDuration = parseInt(data.duration || '0');
-      return data.formats.map(f => ({
-        label: f.label,
-        ext: 'MP4',
-        isAudio: false,
-        dlUrl: `${RENDER_API}/download?url=${encodeURIComponent(videoUrl)}&height=${f.height}&title=${encodeURIComponent(data.title || 'video')}`,
-        title: data.title || '',
-        thumbnail: data.thumbnail || '',
-        duration: data.duration || '0'
-      }));
+      const key = getNextKey();
+      if (!key) throw new Error('Daily limit reached. Try again tomorrow.');
+      // Try formats from best to worst, stop as soon as one works
+      for (const fmt of ['1080','720','480','360']) {
+        setStatus(`Trying ${fmt}p...`, 'loading');
+        const r = await fetchOneFormat(videoUrl, fmt, key);
+        if (r) return [r]; // got one, stop immediately
+      }
+      markExhausted(key);
+      throw new Error('Could not process video. Try again.');
     }
 
     // ── MAIN FETCH ────────────────────────────────────────────────
@@ -1158,7 +1168,6 @@
         document.getElementById('videoTitle').textContent = first.title || 'Unknown title';
         document.getElementById('videoDuration').textContent = first.duration ? formatDuration(parseInt(first.duration)) : '';
         document.getElementById('thumb').src = first.thumbnail || `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
-
         const grid = document.getElementById('formatsGrid');
         grid.innerHTML = '';
 
